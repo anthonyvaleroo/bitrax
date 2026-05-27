@@ -2011,7 +2011,633 @@ font-size: clamp(28px, 4.5vw, 72px);
   }
 }
 
-  </style>
+  
+
+/* =========================================================
+   RESPONSIVE FINAL FIX - TABLET AND IPHONE
+   Pegar al final del CSS. Corrige textos cortados, espacios
+   excesivos y layouts incompletos en pantallas pequeñas.
+   ========================================================= */
+
+:root {
+  --page-x: clamp(16px, 4vw, 56px);
+  --section-y: clamp(54px, 7vw, 112px);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  max-width: 100%;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p,
+a,
+span,
+button,
+label,
+input,
+select,
+textarea {
+  overflow-wrap: anywhere;
+}
+
+.hero,
+.hero-content,
+.scroll-sticky {
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+.hero {
+  height: auto;
+  overflow: clip;
+}
+
+.hero-content {
+  height: auto;
+  padding: clamp(84px, 12vh, 132px) var(--page-x) clamp(26px, 5vh, 54px);
+}
+
+.hero-content h1,
+.big-scroll-title,
+.section-outline-title,
+.clients-title,
+.contact-title,
+.footer-col h2 {
+  text-wrap: balance;
+}
+
+.word-box {
+  width: min(100%, 1280px);
+  height: 1.18em;
+  overflow: visible;
+}
+
+.word {
+  line-height: 1.02;
+  white-space: normal;
+  padding-inline: 0.03em;
+}
+
+.navbar {
+  padding-inline: var(--page-x);
+}
+
+.fullscreen-menu {
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+.menu-content {
+  min-height: calc(100svh - 106px);
+  min-height: calc(100dvh - 106px);
+}
+
+.menu-column a {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.scroll-effect-section {
+  height: 170vh;
+}
+
+.big-scroll-title {
+  padding-inline: var(--page-x);
+  overflow: visible;
+}
+
+.scroll-word {
+  width: min(100%, 1200px);
+  white-space: normal;
+  line-height: 0.9;
+}
+
+.about-section,
+.portfolio-section,
+.clients-section,
+.contact-section {
+  padding-block: var(--section-y);
+}
+
+.about-inner,
+.portfolio-inner,
+.clients-inner,
+.contact-inner,
+.footer-inner,
+.footer-bottom {
+  width: min(100% - (var(--page-x) * 2), 1240px);
+}
+
+.about-text,
+.about-bottom,
+.contact-text,
+.footer-col p {
+  max-width: 72ch;
+  margin-inline: auto;
+}
+
+.services-row {
+  gap: clamp(12px, 3vw, 42px);
+}
+
+.portfolio-categories {
+  gap: clamp(14px, 3.2vw, 52px);
+  margin-bottom: clamp(28px, 5vw, 62px);
+}
+
+.portfolio-category {
+  line-height: 1.05;
+  white-space: normal;
+}
+
+.portfolio-grid {
+  gap: clamp(14px, 2.5vw, 28px);
+}
+
+.portfolio-overlay {
+  opacity: 1;
+  transform: none;
+}
+
+.clients-subtitle {
+  margin-bottom: clamp(34px, 5vw, 76px);
+}
+
+.logos-marquee {
+  padding-block: 6px;
+}
+
+.contact-inner {
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+}
+
+.contact-form {
+  min-width: 0;
+}
+
+.contact-submit,
+.footer-link,
+.portfolio-cta,
+.cta-link {
+  flex-wrap: nowrap;
+}
+
+.site-footer {
+  padding-inline: var(--page-x);
+}
+
+@media (max-width: 1180px) {
+  :root {
+    --page-x: clamp(18px, 4vw, 42px);
+    --section-y: clamp(50px, 7vw, 92px);
+  }
+
+  .hero-content h1 {
+    font-size: clamp(48px, 9vw, 92px);
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+  }
+
+  .menu-content {
+    width: min(100% - (var(--page-x) * 2), 960px);
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(26px, 5vw, 58px);
+  }
+
+  .menu-column a,
+  .menu-column:nth-child(2) a {
+    font-size: clamp(34px, 5.2vw, 54px);
+    line-height: 1;
+    white-space: normal;
+  }
+
+  .big-scroll-title {
+    font-size: clamp(68px, 13vw, 150px);
+  }
+
+  .contact-inner {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .contact-left,
+  .contact-text {
+    max-width: 760px;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 44px;
+  }
+
+  .footer-newsletter {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --page-x: clamp(16px, 4.5vw, 32px);
+    --section-y: clamp(46px, 7vw, 76px);
+  }
+
+  .navbar {
+    padding-block: 16px;
+    grid-template-columns: auto auto;
+  }
+
+  .navbar.nav-scrolled {
+    padding-block: 14px;
+  }
+
+  .hero-content {
+    justify-content: center;
+    padding-top: clamp(76px, 13vh, 110px);
+    padding-bottom: 26px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(40px, 11.6vw, 82px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+
+  .word-box {
+    height: 1.22em;
+  }
+
+  .grid-bg {
+    inset: -80px;
+    background-size: 24px 24px;
+    opacity: 0.55;
+  }
+
+  .distortion {
+    width: 92vw;
+    height: 100svh;
+    height: 100dvh;
+    top: 0;
+    right: -36vw;
+    opacity: 0.22;
+  }
+
+  .menu-top {
+    padding: 16px var(--page-x);
+  }
+
+  .menu-content {
+    width: 100%;
+    min-height: calc(100svh - 78px);
+    min-height: calc(100dvh - 78px);
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 10px var(--page-x) 24px;
+    align-content: center;
+    overflow-y: auto;
+  }
+
+  .menu-column {
+    align-items: center;
+    gap: 4px;
+  }
+
+  .menu-column a,
+  .menu-column:nth-child(2) a {
+    font-size: clamp(27px, 6.6vw, 42px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    text-align: center;
+  }
+
+  .scroll-effect-section {
+    height: 135vh;
+  }
+
+  .big-scroll-title {
+    font-size: clamp(54px, 13.8vw, 112px);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+  }
+
+  .scroll-word:nth-child(1) { --y: -64px; }
+  .scroll-word:nth-child(3) { --y: 64px; }
+
+  .about-section {
+    min-height: auto;
+  }
+
+  .section-outline-title {
+    font-size: clamp(42px, 11vw, 84px);
+    line-height: 0.96;
+  }
+
+  .about-heading,
+  .about-text,
+  .services-row,
+  .about-bottom {
+    margin-bottom: clamp(20px, 4vw, 34px);
+  }
+
+  .portfolio-inner {
+    width: min(100% - (var(--page-x) * 2), 760px);
+  }
+
+  .portfolio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .clients-title {
+    font-size: clamp(42px, 10vw, 82px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+
+  .clients-subtitle {
+    margin-top: 18px;
+    margin-bottom: 34px;
+  }
+
+  .contact-title {
+    font-size: clamp(38px, 9.5vw, 72px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+
+  .contact-form {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .contact-submit {
+    justify-self: start;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .footer-col,
+  .footer-col h2,
+  .footer-col p {
+    margin-bottom: 18px;
+  }
+
+  .footer-link {
+    justify-content: flex-start;
+  }
+
+  .footer-bottom {
+    margin-top: 30px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --page-x: 18px;
+    --section-y: 42px;
+  }
+
+  .logo img {
+    max-height: 28px;
+    max-width: 112px;
+  }
+
+  .menu-btn {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .hero-content {
+    padding-top: 72px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(34px, 10.4vw, 54px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+
+  .word-box {
+    height: 1.28em;
+  }
+
+  .word {
+    line-height: 1.06;
+  }
+
+  .close-menu {
+    width: 40px;
+    height: 40px;
+  }
+
+  .menu-content {
+    gap: 14px;
+    padding-bottom: 18px;
+  }
+
+  .menu-column a,
+  .menu-column:nth-child(2) a {
+    font-size: clamp(23px, 7.4vw, 32px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+  }
+
+  .scroll-effect-section {
+    height: 125vh;
+  }
+
+  .big-scroll-title {
+    font-size: clamp(42px, 12.8vw, 70px);
+    line-height: 0.96;
+  }
+
+  .scroll-word {
+    -webkit-text-stroke-width: 1.1px;
+    text-stroke-width: 1.1px;
+  }
+
+  .scroll-word:nth-child(1) { --y: -48px; }
+  .scroll-word:nth-child(3) { --y: 48px; }
+
+  .section-outline-title {
+    font-size: clamp(34px, 11.8vw, 54px);
+    line-height: 1;
+  }
+
+  .about-text,
+  .about-bottom,
+  .contact-text,
+  .footer-col p {
+    font-size: 15.5px;
+    line-height: 1.35;
+  }
+
+  .services-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .services-row span {
+    font-size: 16px;
+  }
+
+  .portfolio-categories {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 26px;
+  }
+
+  .portfolio-category {
+    font-size: clamp(28px, 9.4vw, 40px);
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .portfolio-card {
+    aspect-ratio: 16 / 11;
+  }
+
+  .portfolio-overlay {
+    padding: 16px;
+  }
+
+  .portfolio-overlay h3 {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .clients-title {
+    font-size: clamp(34px, 11.5vw, 54px);
+  }
+
+  .clients-subtitle {
+    font-size: 14px;
+  }
+
+  .logos-track {
+    gap: 30px;
+  }
+
+  .logo-item {
+    min-width: 108px;
+    height: 48px;
+  }
+
+  .logo-item img {
+    max-width: 108px;
+    max-height: 42px;
+  }
+
+  .contact-title {
+    font-size: clamp(32px, 10vw, 46px);
+    line-height: 1;
+  }
+
+  .contact-kicker {
+    margin-bottom: 14px;
+  }
+
+  .contact-form input,
+  .contact-form select,
+  .contact-form textarea {
+    font-size: 15px;
+  }
+
+  .contact-form textarea {
+    min-height: 92px;
+  }
+
+  .footer-col h2 {
+    font-size: clamp(30px, 9.5vw, 38px);
+    line-height: 1;
+    margin-bottom: 22px;
+  }
+
+  .footer-newsletter,
+  .footer-jobs {
+    display: block;
+  }
+
+  .footer-bottom {
+    display: flex;
+  }
+}
+
+@media (max-width: 390px) {
+  :root {
+    --page-x: 16px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(31px, 10vw, 39px);
+    letter-spacing: -0.02em;
+  }
+
+  .menu-column a,
+  .menu-column:nth-child(2) a {
+    font-size: 22px;
+  }
+
+  .big-scroll-title {
+    font-size: 39px;
+  }
+
+  .scroll-word:nth-child(1) { --y: -42px; }
+  .scroll-word:nth-child(3) { --y: 42px; }
+
+  .portfolio-category {
+    font-size: 27px;
+  }
+
+  .contact-title,
+  .footer-col h2 {
+    letter-spacing: -0.02em;
+  }
+}
+
+@media (max-height: 700px) and (max-width: 900px) {
+  .hero-content {
+    padding-top: 64px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(31px, 9vh, 48px);
+    line-height: 1;
+  }
+
+  .menu-content {
+    align-content: start;
+    padding-top: 10px;
+  }
+
+  .menu-column a,
+  .menu-column:nth-child(2) a {
+    font-size: clamp(21px, 5.8vh, 30px);
+  }
+}
+</style>
 </head>
 
 <body>

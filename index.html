@@ -1,0 +1,2656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitrax</title>
+
+  <style>
+    @font-face {
+      font-family: Bau;
+      src: url(fonts/BauPro-Bold.woff2);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      background: #000;
+      font-family: Bau;
+     color: #fff;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    button,
+    a {
+      font-family: Bau;    }
+
+    button {
+      background: transparent;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ========================= */
+    /* HERO */
+    /* ========================= */
+
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100svh;
+      min-height: 620px;
+      overflow: hidden;
+      background: #030303;
+      --move-x: 0px;
+      --move-y: 0px;
+      --wave-x: 0px;
+      --wave-y: 0px;
+      --hero-scroll-progress: 0;
+    }
+
+    .grid-bg {
+      position: absolute;
+      inset: -120px;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.24) 1px, transparent 1px);
+      background-size: 31px 31px;
+      transform: translate(var(--move-x), var(--move-y));
+      transition: transform 0.12s ease-out;
+      opacity: 0.75;
+      z-index: 1;
+    }
+
+    .grid-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 8px 8px;
+      opacity: 0.25;
+    }
+
+    .shadow-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.45) 70%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent 35%, rgba(0, 0, 0, 0.2));
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .noise {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0.12;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.12) 0px,
+          rgba(255, 255, 255, 0.12) 1px,
+          transparent 1px,
+          transparent 5px
+        );
+      mix-blend-mode: screen;
+    }
+
+    .distortion {
+      position: absolute;
+      top: -15%;
+      right: -8%;
+      width: 55vw;
+      height: 130vh;
+      z-index: 2;
+      opacity: 0.32;
+      pointer-events: none;
+      transform: translate(var(--wave-x), var(--wave-y));
+      transition: transform 0.18s ease-out;
+      filter: blur(0.2px);
+    }
+
+    .distortion::before,
+    .distortion::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 35% 12%, transparent 24%, rgba(255, 255, 255, 0.34) 25%, transparent 26%),
+        radial-gradient(ellipse at 60% 28%, transparent 28%, rgba(255, 255, 255, 0.28) 29%, transparent 30%),
+        radial-gradient(ellipse at 45% 48%, transparent 31%, rgba(255, 255, 255, 0.25) 32%, transparent 33%),
+        radial-gradient(ellipse at 65% 68%, transparent 25%, rgba(255, 255, 255, 0.27) 26%, transparent 27%),
+        radial-gradient(ellipse at 40% 84%, transparent 29%, rgba(255, 255, 255, 0.22) 30%, transparent 31%);
+    }
+
+    .distortion::after {
+      transform: rotate(90deg) scale(1.2);
+      opacity: 0.9;
+    }
+
+    /* ========================= */
+    /* NAVBAR */
+    /* ========================= */
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 90;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: clamp(24px, 3.2vw, 48px) clamp(22px, 3.5vw, 52px);
+      font-size: clamp(14px, 1.15vw, 18px);
+      font-weight: 500;
+      pointer-events: none;
+      transform: translateY(0);
+      opacity: 1;
+      transition:
+        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.35s ease,
+        background 0.35s ease,
+        padding 0.35s ease;
+    }
+
+    .navbar.nav-hidden {
+      transform: translateY(-115%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .navbar.nav-scrolled {
+      padding-top: 24px;
+      padding-bottom: 24px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+    }
+
+    .navbar > * {
+      pointer-events: auto;
+    }
+
+    .social {
+      justify-self: start;
+      white-space: nowrap;
+    }
+
+    .logo {
+      justify-self: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      display: block;
+      max-height: clamp(36px, 3.2vw, 48px);
+      width: auto;
+      max-width: 180px;
+      object-fit: contain;
+    }
+
+    .menu {
+      justify-self: end;
+      white-space: nowrap;
+      font-size: clamp(15px, 1.2vw, 19px);
+      display: flex;
+      align-items: center;
+    }
+
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: inherit;
+      text-transform: uppercase;
+    }
+
+    .arrow {
+      font-size: clamp(28px, 2.4vw, 34px);
+      line-height: 1;
+      font-weight: 300;
+      transform: translateY(-1px);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 8;
+      height: 100vh;
+      height: 100svh;
+      min-height: 620px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 35px;
+    }
+
+    .hero-content h1 {
+      width: 100%;
+      font-size: clamp(52px, 7.1vw, 108px);
+      line-height: 0.95;
+      font-weight: 900;
+      letter-spacing: clamp(-5px, -0.3vw, -2px);
+      color: #fff;
+      text-transform: uppercase;
+      transform:
+        translateY(calc(var(--hero-scroll-progress) * -95px))
+        scale(calc(1 - var(--hero-scroll-progress) * 0.08));
+      opacity: calc(1 - var(--hero-scroll-progress) * 1.25);
+      filter: blur(calc(var(--hero-scroll-progress) * 10px));
+      transition: none;
+      will-change: transform, opacity, filter;
+    }
+
+    .word-box {
+      position: relative;
+      display: inline-block;
+      width: min(96vw, 1280px);
+      height: 1.05em;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+
+    .word {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      display: block;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(100%);
+      filter: blur(10px);
+      transition:
+        opacity 0.8s ease,
+        transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.8s ease;
+      will-change: opacity, transform, filter;
+      white-space: nowrap;
+    }
+
+    .word.active {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    .word.exit {
+      opacity: 0;
+      transform: translateY(-100%);
+      filter: blur(10px);
+    }
+
+    .word.scroll-exit {
+      opacity: 0;
+      transform: translateY(-135%) scale(0.96);
+      filter: blur(14px);
+    }
+
+    .hero.scroll-started .word:not(.active) {
+      opacity: 0;
+      transform: translateY(120%);
+    }
+
+    /* ========================= */
+    /* MENÚ FULLSCREEN */
+    /* ========================= */
+
+    .fullscreen-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      color: #fff;
+      transform: translateX(-100%);
+      transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .fullscreen-menu.open {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .menu-top {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: clamp(24px, 3vw, 42px) clamp(22px, 4vw, 60px);
+      font-size: clamp(15px, 1.4vw, 21px);
+    }
+
+    .menu-social {
+      justify-self: start;
+      white-space: nowrap;
+    }
+
+    .menu-lang {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .menu-lang strong {
+      font-weight: 900;
+    }
+
+    .close-menu {
+      width: clamp(46px, 4vw, 54px);
+      height: clamp(46px, 4vw, 54px);
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 50%;
+      cursor: pointer;
+      margin-left: 12px;
+    }
+
+    .close-menu::before,
+    .close-menu::after {
+      content: "";
+      position: absolute;
+      width: 132%;
+      height: 1px;
+      background: #fff;
+      left: 50%;
+      top: 50%;
+      transform-origin: center;
+    }
+
+    .close-menu::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .close-menu::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .close-menu span::before,
+    .close-menu span::after {
+      content: "";
+      position: absolute;
+      background: rgba(255,255,255,0.75);
+    }
+
+    .close-menu span::before {
+      width: 1px;
+      height: 100%;
+      left: 50%;
+      top: 0;
+    }
+
+    .close-menu span::after {
+      height: 1px;
+      width: 100%;
+      left: 0;
+      top: 50%;
+    }
+
+    .menu-content {
+      position: relative;
+      z-index: 2;
+      width: min(100% - 90px, 1580px);
+      margin: 0 auto;
+      min-height: calc(100vh - 135px);
+      min-height: calc(100svh - 135px);
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      align-items: center;
+      gap: clamp(60px, 8vw, 130px);
+      padding-bottom: 30px;
+      overflow: hidden;
+    }
+
+    .menu-column {
+      width: 100%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .menu-column a {
+      display: inline-block;
+      font-size: clamp(38px, 3.7vw, 68px);
+      line-height: 0.95;
+      font-weight: 900;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+      transform: translateX(-40px);
+      opacity: 0;
+      transition:
+        opacity 0.65s ease,
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        color 0.3s ease;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .menu-column:nth-child(2) a {
+      font-size: clamp(36px, 3.45vw, 64px);
+    }
+
+    .fullscreen-menu.open .menu-column a {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .fullscreen-menu.open .menu-column a:nth-child(1) { transition-delay: 0.18s; }
+    .fullscreen-menu.open .menu-column a:nth-child(2) { transition-delay: 0.25s; }
+    .fullscreen-menu.open .menu-column a:nth-child(3) { transition-delay: 0.32s; }
+    .fullscreen-menu.open .menu-column a:nth-child(4) { transition-delay: 0.39s; }
+    .fullscreen-menu.open .menu-column a:nth-child(5) { transition-delay: 0.46s; }
+    .fullscreen-menu.open .menu-column a:nth-child(6) { transition-delay: 0.53s; }
+
+    .menu-column a:hover {
+      color: rgba(255,255,255,0.55);
+    }
+
+    /* ========================= */
+    /* SECCIÓN SCROLL EFFECT */
+    /* ========================= */
+
+    .scroll-effect-section {
+      position: relative;
+      height: 210vh;
+      background: #000;
+      overflow: visible;
+    }
+
+    .scroll-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .big-scroll-title {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: 900;
+      line-height: 0.82;
+      letter-spacing: clamp(-5px, -0.4vw, -2px);
+      font-size: clamp(70px, 10.8vw, 210px);
+      --split: 0;
+      --fill: 0;
+      --scale: 1;
+    }
+
+    .scroll-word {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 100%;
+      transform:
+        translate(-50%, -50%)
+        translateY(calc(var(--y) * var(--split)))
+        scale(var(--scale));
+      color: rgba(255, 255, 255, var(--fill));
+      -webkit-text-stroke: 2px rgba(255,255,255, calc(1 - var(--fill)));
+      text-stroke: 2px rgba(255,255,255, calc(1 - var(--fill)));
+      transition: none;
+      will-change: transform, color;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .scroll-word:nth-child(1) {
+      --y: -150px;
+    }
+
+    .scroll-word:nth-child(2) {
+      --y: 0px;
+    }
+
+    .scroll-word:nth-child(3) {
+      --y: 150px;
+    }
+
+    .scroll-word.solid {
+      color: #fff;
+      -webkit-text-stroke: 0;
+      text-stroke: 0;
+    }
+
+    /* ========================= */
+    /* SECCIÓN CONTENIDO */
+    /* ========================= */
+
+    .about-section {
+      min-height: 100vh;
+      min-height: 100svh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .about-inner {
+      width: min(1120px, 92vw);
+      margin: 0 auto;
+    }
+
+    .about-heading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: clamp(28px, 4.8vw, 58px);
+    }
+
+    .section-outline-title {
+      font-size: clamp(54px, 9vw, 138px);
+      line-height: 0.82;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: clamp(-4px, -0.35vw, -1px);
+      color: #000;
+      -webkit-text-stroke: clamp(1.3px, 0.15vw, 2.4px) #fff;
+      text-stroke: clamp(1.3px, 0.15vw, 2.4px) #fff;
+      text-shadow:
+        0 0 16px rgba(255,255,255,0.08),
+        0 0 34px rgba(255,255,255,0.06);
+      transform: translateZ(0);
+    }
+
+    .section-outline-title:hover {
+      color: #fff;
+      -webkit-text-stroke-color: #fff;
+      text-stroke-color: #fff;
+      transition: color 0.35s ease;
+    }
+
+    .about-text {
+      font-size: clamp(18px, 1.25vw, 24px);
+      line-height: 1.35;
+      font-weight: 400;
+      margin-bottom: 48px;
+    }
+
+    .about-text strong {
+      font-weight: 900;
+    }
+
+    .services-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(28px, 5vw, 70px);
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .services-row span {
+      font-size: clamp(18px, 1.45vw, 28px);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .about-bottom {
+      font-size: clamp(18px, 1.25vw, 23px);
+      line-height: 1.35;
+      margin-bottom: 58px;
+    }
+
+    .about-bottom strong {
+      font-weight: 900;
+    }
+
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      font-size: clamp(18px, 1.3vw, 25px);
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .cta-link .arrow {
+      font-size: clamp(36px, 3vw, 42px);
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(40px);
+      transition:
+        opacity 0.9s ease,
+        transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+/* ========================= */
+/* SECCIÓN PORTAFOLIO */
+/* ========================= */
+
+.portfolio-section {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: clamp(80px, 9vw, 150px) 0 clamp(70px, 7vw, 120px);
+  overflow: hidden;
+  position: relative;
+}
+
+.portfolio-inner {
+  width: min(1760px, 94vw);
+  margin: 0 auto;
+}
+
+.portfolio-categories {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(36px, 5vw, 90px);
+  flex-wrap: wrap;
+  margin-bottom: clamp(50px, 6vw, 90px);
+  text-align: center;
+}
+
+.portfolio-category {
+  font-size: clamp(26px, 3vw, 54px);
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: clamp(-1px, -0.12vw, -2px);
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9);
+  text-stroke: 1.5px rgba(255, 255, 255, 0.9);
+  transition:
+    color 0.35s ease,
+    -webkit-text-stroke-color 0.35s ease,
+    transform 0.35s ease;
+}
+
+.portfolio-category:hover {
+  color: #fff;
+  -webkit-text-stroke-color: #fff;
+  text-stroke-color: #fff;
+  transform: translateY(-4px);
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 34px);
+}
+
+.portfolio-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10.5;
+  overflow: hidden;
+  background: #111;
+  isolation: isolate;
+}
+
+.portfolio-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transform: scale(1);
+  filter: grayscale(10%) brightness(0.82);
+  transition:
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.45s ease;
+}
+
+.portfolio-card:hover img {
+  transform: scale(1.08);
+  filter: grayscale(0%) brightness(0.55);
+}
+
+.portfolio-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: clamp(18px, 2vw, 34px);
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.88),
+      rgba(0, 0, 0, 0.28),
+      rgba(0, 0, 0, 0.02)
+    );
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.portfolio-card:hover .portfolio-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.portfolio-overlay h3 {
+  font-size: clamp(22px, 2vw, 38px);
+  line-height: 0.95;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.portfolio-overlay span {
+  font-size: clamp(14px, 1vw, 18px);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.portfolio-bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(42px, 5vw, 80px);
+}
+
+.portfolio-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  font-size: clamp(18px, 1.3vw, 25px);
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: #fff;
+  transition: opacity 0.3s ease;
+}
+
+.portfolio-cta:hover {
+  opacity: 0.65;
+}
+
+/* ========================= */
+/* SECCIÓN CLIENTES / MANTRA */
+/* ========================= */
+
+.clients-section {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: clamp(86px, 10vw, 170px) 0 clamp(70px, 8vw, 125px);
+  overflow: hidden;
+  position: relative;
+
+}
+
+.clients-section::before,
+.clients-section::after,
+.clients-cross,
+.clients-cross::before,
+.clients-cross::after {
+  display: none;
+}
+
+.clients-inner {
+  width: min(1680px, 94vw);
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.clients-title {
+  font-size: clamp(46px, 4vw, 118px);
+  line-height: 0.88;
+  font-weight: 900;
+  letter-spacing: clamp(-3px, -0.32vw, -6px);
+  text-transform: uppercase;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.clients-subtitle {
+  font-size: clamp(15px, 1.1vw, 22px);
+  line-height: 1.35;
+  margin: clamp(28px, 3vw, 52px) auto clamp(62px, 7vw, 120px);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.logos-marquee {
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  position: relative;
+  padding: 12px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+.logos-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: clamp(58px, 7vw, 132px);
+  animation: logosMove 44s linear infinite;
+  will-change: transform;
+}
+
+.logos-marquee:hover .logos-track {
+  animation-play-state: paused;
+}
+
+.logo-item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(120px, 12vw, 230px);
+  height: clamp(52px, 6vw, 92px);
+  opacity: 0.96;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.logo-item:hover {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.logo-item img {
+  display: block;
+  max-width: clamp(118px, 12vw, 225px);
+  max-height: clamp(46px, 5.6vw, 86px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: grayscale(1) brightness(0) invert(1);
+}
+
+@keyframes logosMove {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - clamp(29px, 3.5vw, 66px)));
+  }
+}
+
+@media (max-width: 900px) {
+  .clients-section {
+    padding: 76px 0 86px;
+  }
+
+  .clients-section::after {
+    display: none;
+  }
+
+  .clients-title {
+    font-size: clamp(42px, 11vw, 74px);
+    line-height: 0.9;
+    letter-spacing: -2.4px;
+  }
+
+  .clients-subtitle {
+    margin: 24px auto 58px;
+    padding-inline: 18px;
+  }
+
+  .logos-track {
+    gap: 54px;
+    animation-duration: 34s;
+  }
+
+  .logo-item {
+    min-width: 145px;
+    height: 64px;
+  }
+
+  .logo-item img {
+    max-width: 145px;
+    max-height: 58px;
+  }
+}
+
+@media (max-width: 520px) {
+  .clients-section {
+    padding: 62px 0 72px;
+  }
+
+  .clients-section::before,
+  .clients-cross {
+    opacity: 0.65;
+  }
+
+  .clients-title {
+    font-size: clamp(36px, 13vw, 58px);
+    letter-spacing: -1.8px;
+  }
+
+  .clients-subtitle {
+    font-size: 14px;
+    margin-bottom: 42px;
+  }
+
+  .logos-track {
+    gap: 38px;
+    animation-duration: 30s;
+  }
+
+  .logo-item {
+    min-width: 118px;
+    height: 56px;
+  }
+
+  .logo-item img {
+    max-width: 118px;
+    max-height: 50px;
+  }
+}
+
+
+/* ========================= */
+/* SECCIÓN FORMULARIO CONTACTO */
+/* ========================= */
+
+.contact-section {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: clamp(86px, 10vw, 160px) clamp(22px, 5vw, 88px);
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255,255,255,0.09), transparent 18%),
+    radial-gradient(circle at 88% 74%, rgba(255,255,255,0.06), transparent 22%);
+  opacity: 0.8;
+}
+
+.contact-inner {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(48px, 7vw, 120px);
+  align-items: start;
+}
+
+.contact-kicker {
+  display: inline-block;
+  font-size: clamp(14px, 1vw, 18px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 26px;
+}
+
+.contact-title {
+  font-size: clamp(48px, 7.5vw, 136px);
+  line-height: 0.84;
+  font-weight: 900;
+  letter-spacing: clamp(-4px, -0.35vw, -7px);
+  text-transform: uppercase;
+  margin-bottom: clamp(30px, 4vw, 58px);
+}
+
+.contact-text {
+  max-width: 560px;
+  font-size: clamp(17px, 1.15vw, 22px);
+  line-height: 1.35;
+  color: rgba(255,255,255,0.84);
+  text-transform: uppercase;
+}
+
+.contact-form {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(22px, 2.1vw, 34px) clamp(22px, 3vw, 48px);
+}
+
+.contact-field {
+  width: 100%;
+}
+
+.contact-field.full {
+  grid-column: 1 / -1;
+}
+
+.contact-form label {
+  display: block;
+  font-size: clamp(13px, 0.9vw, 16px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 12px;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea {
+  width: 100%;
+  display: block;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.74);
+  border-radius: 0;
+  padding: 0 0 13px;
+  color: #fff;
+      font-family: Bau;
+  font-size: clamp(17px, 1.15vw, 21px);
+  line-height: 1.25;
+  outline: none;
+  text-transform: uppercase;
+}
+
+.contact-form textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.contact-form select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #fff 50%),
+    linear-gradient(135deg, #fff 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 48%,
+    calc(100% - 10px) 48%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: rgba(255,255,255,0.45);
+}
+
+.contact-form input:focus,
+.contact-form select:focus,
+.contact-form textarea:focus {
+  border-bottom-color: #fff;
+}
+
+.contact-submit {
+  grid-column: 1 / -1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+  color: #fff;
+  font-size: clamp(18px, 1.25vw, 24px);
+  text-transform: uppercase;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.contact-submit:hover {
+  opacity: 0.72;
+  transform: translateX(4px);
+}
+
+.contact-submit .arrow {
+  font-size: clamp(34px, 3vw, 46px);
+}
+
+/* ========================= */
+/* FOOTER */
+/* ========================= */
+
+.site-footer {
+  width: 100%;
+  background: #d8d8d8;
+  color: #07111d;
+  padding: clamp(58px, 6vw, 88px) clamp(30px, 5vw, 90px) 28px;
+      font-family: Bau;
+
+  overflow: hidden;
+}
+
+.footer-inner {
+  width: min(1360px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr 1fr;
+  gap: clamp(54px, 7vw, 120px);
+  align-items: start;
+}
+
+.footer-col h2 {
+  font-size: clamp(34px, 3.1vw, 54px);
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  margin-bottom: clamp(48px, 5vw, 72px);
+}
+
+.footer-col p {
+  font-size: clamp(16px, 1.05vw, 20px);
+  line-height: 1.32;
+  font-weight: 400;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+.footer-col p strong {
+  font-weight: 900;
+}
+
+.footer-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 28px;
+  font-size: clamp(16px, 1vw, 19px);
+  line-height: 1;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: #07111d;
+  text-decoration: none;
+}
+
+.footer-link span {
+  font-size: 34px;
+  line-height: 0;
+  font-weight: 300;
+}
+
+.footer-copy {
+  text-transform: none !important;
+  margin-top: 28px;
+}
+
+.footer-form {
+  margin-top: 30px;
+}
+
+.footer-form input {
+  width: 100%;
+  display: block;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #07111d;
+  padding: 0 0 8px;
+  margin-bottom: 28px;
+  font-size: clamp(16px, 1vw, 19px);
+      font-family: Bau;
+  color: #07111d;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.footer-form input::placeholder {
+  color: #07111d;
+  opacity: 1;
+}
+
+.footer-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+      font-family: Bau;
+  padding: 8px 0 0;
+}
+
+.footer-bottom {
+  width: min(1360px, 100%);
+  margin: clamp(64px, 8vw, 110px) auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  font-size: clamp(14px, 0.95vw, 18px);
+  text-transform: uppercase;
+}
+
+.footer-bottom a {
+  color: #07111d;
+  text-decoration: none;
+}
+
+/* ========================= */
+/* RESPONSIVE FORMULARIO + FOOTER */
+/* ========================= */
+
+@media (max-width: 1000px) {
+  .contact-inner {
+    grid-template-columns: 1fr;
+    gap: 44px;
+  }
+
+  .contact-title {
+    max-width: 760px;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 64px 54px;
+  }
+
+  .footer-newsletter {
+    grid-column: 1 / -1;
+    max-width: 620px;
+  }
+}
+
+@media (max-width: 680px) {
+  .contact-section {
+    padding: 62px 30px 72px;
+  }
+
+  .contact-kicker {
+    margin-bottom: 20px;
+  }
+
+  .contact-title {
+    font-size: clamp(42px, 13vw, 62px);
+    line-height: 0.9;
+    letter-spacing: -2px;
+  }
+
+  .contact-text {
+    font-size: 16.5px;
+  }
+
+  .contact-form {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .contact-submit {
+    justify-self: end;
+    font-size: 18px;
+  }
+
+  .site-footer {
+    padding: 46px 30px 26px;
+  }
+
+  .footer-inner {
+    display: block;
+  }
+
+  .footer-col {
+    margin-bottom: 64px;
+  }
+
+  .footer-col h2 {
+    font-size: clamp(40px, 10vw, 48px);
+    line-height: 0.96;
+    letter-spacing: -1.3px;
+    margin-bottom: 34px;
+  }
+
+  .footer-col p {
+    font-size: 18px;
+    line-height: 1.42;
+    margin-bottom: 20px;
+  }
+
+  .footer-link {
+    justify-content: flex-end;
+    margin-top: 30px;
+    font-size: 18px;
+  }
+
+  .footer-jobs,
+  .footer-newsletter {
+    display: none;
+  }
+
+  .footer-bottom {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .contact-section,
+  .site-footer {
+    padding-inline: 30px;
+  }
+
+  .footer-col h2 {
+    font-size: 40px;
+  }
+
+  .footer-col p {
+    font-size: 18px;
+  }
+}
+
+    /* ========================= */
+    /* RESPONSIVE */
+    /* ========================= */
+@media (max-width: 1200px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .portfolio-section {
+    padding: 76px 0 82px;
+  }
+
+  .portfolio-inner {
+    width: min(720px, 92vw);
+  }
+
+  .portfolio-categories {
+    gap: 22px;
+    margin-bottom: 42px;
+  }
+
+  .portfolio-category {
+    font-size: clamp(30px, 7vw, 52px);
+    -webkit-text-stroke-width: 1.3px;
+    text-stroke-width: 1.3px;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .portfolio-card {
+    aspect-ratio: 4 / 3;
+  }
+
+  .portfolio-overlay {
+    opacity: 1;
+    transform: none;
+    background:
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.78),
+        rgba(0, 0, 0, 0.18),
+        transparent
+      );
+  }
+}
+
+@media (max-width: 520px) {
+  .portfolio-section {
+    padding: 62px 0 70px;
+  }
+
+  .portfolio-inner {
+    width: min(420px, 90vw);
+  }
+
+  .portfolio-categories {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 34px;
+  }
+
+  .portfolio-category {
+    font-size: clamp(32px, 10vw, 44px);
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .portfolio-card {
+    aspect-ratio: 16 / 11;
+  }
+
+  .portfolio-overlay {
+    padding: 20px;
+  }
+
+  .portfolio-overlay h3 {
+    font-size: 24px;
+  }
+
+  .portfolio-overlay span {
+    font-size: 14px;
+  }
+
+  .portfolio-bottom {
+    margin-top: 34px;
+  }
+
+  .portfolio-cta {
+    font-size: 16px;
+    gap: 12px;
+  }
+}
+    @media (max-width: 1400px) {
+      .menu-content {
+        width: min(100% - 70px, 1380px);
+        gap: 70px;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .hero-content h1 {
+        font-size: clamp(48px, 7.4vw, 92px);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        min-height: 100svh;
+        height: 100svh;
+      }
+
+      .navbar {
+        padding: 22px 20px;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+      }
+
+      .social {
+        display: none;
+      }
+
+      .logo {
+        justify-self: start;
+      }
+
+      .logo img {
+        max-height: 34px;
+        max-width: 135px;
+      }
+
+      .menu {
+        justify-self: end;
+      }
+
+      .menu-btn {
+        font-size: 14px;
+        gap: 8px;
+      }
+
+      .hero-content {
+        height: 100svh;
+        min-height: 420px;
+        padding: 78px 16px 0;
+        align-items: center;
+      }
+
+      .hero-content h1 {
+        font-size: clamp(42px, 12.6vw, 78px);
+        line-height: 0.9;
+        letter-spacing: -2.2px;
+      }
+
+      .word-box {
+        width: 100%;
+        height: 0.98em;
+      }
+
+      .word {
+        white-space: normal;
+      }
+
+      .distortion {
+        width: 95vw;
+        right: -42%;
+      }
+
+      .menu-top {
+        padding: 22px 20px;
+        grid-template-columns: 1fr auto;
+      }
+
+      .menu-social {
+        display: none;
+      }
+
+      .menu-lang {
+        justify-self: end;
+        font-size: 14px;
+      }
+
+      .menu-content {
+        width: 100%;
+        min-height: calc(100svh - 90px);
+        grid-template-columns: 1fr;
+        align-content: center;
+        justify-content: center;
+        gap: 30px;
+        padding: 10px 24px 32px;
+        overflow-y: auto;
+        text-align: center;
+      }
+
+      .menu-column {
+        align-items: center;
+        gap: 2px;
+      }
+
+      .menu-column a,
+      .menu-column:nth-child(2) a {
+        font-size: clamp(28px, 7.4vw, 42px);
+        line-height: 0.92;
+        letter-spacing: -1.3px;
+        white-space: normal;
+        text-align: center;
+      }
+
+      .scroll-effect-section {
+        height: 165vh;
+      }
+
+      .scroll-sticky {
+        align-items: center;
+      }
+
+      .big-scroll-title {
+        font-size: clamp(60px, 15.5vw, 118px);
+        line-height: 0.78;
+        letter-spacing: -3px;
+      }
+
+      .scroll-word {
+        -webkit-text-stroke: 1.4px rgba(255,255,255, calc(1 - var(--fill)));
+        text-stroke: 1.4px rgba(255,255,255, calc(1 - var(--fill)));
+        white-space: normal;
+        padding-inline: 14px;
+      }
+
+      .scroll-word:nth-child(1) {
+        --y: -72px;
+      }
+
+      .scroll-word:nth-child(3) {
+        --y: 72px;
+      }
+
+      .about-section {
+        min-height: auto;
+        padding: 72px 20px 82px;
+      }
+
+      .about-inner {
+        width: min(680px, 92vw);
+      }
+
+      .about-heading {
+        margin-bottom: 26px;
+      }
+
+      .section-outline-title {
+        font-size: clamp(42px, 12vw, 78px);
+        line-height: 0.86;
+        letter-spacing: -2px;
+        -webkit-text-stroke-width: 1.5px;
+        text-stroke-width: 1.5px;
+      }
+
+      .about-text {
+        margin-bottom: 30px;
+      }
+
+      .services-row {
+        gap: 22px;
+        margin-bottom: 30px;
+      }
+
+      .about-bottom {
+        margin-bottom: 38px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .navbar {
+        padding: 18px 16px;
+      }
+
+      .logo img {
+        max-height: 30px;
+        max-width: 120px;
+      }
+
+      .menu-btn {
+        font-size: 13px;
+      }
+
+      .arrow {
+        font-size: 24px;
+      }
+
+      .hero-content {
+        padding: 64px 14px 0;
+      }
+
+      .hero-content h1 {
+        font-size: clamp(38px, 11.8vw, 58px);
+        line-height: 0.88;
+        letter-spacing: -1.8px;
+      }
+
+      .word-box {
+        height: 0.94em;
+      }
+
+      .menu-top {
+        padding: 18px 16px;
+      }
+
+      .menu-lang span {
+        display: none;
+      }
+
+      .close-menu {
+        width: 42px;
+        height: 42px;
+      }
+
+      .menu-content {
+        align-content: center;
+        gap: 24px;
+        padding: 4px 20px 28px;
+      }
+
+      .menu-column {
+        align-items: center;
+        gap: 1px;
+      }
+
+      .menu-column a,
+      .menu-column:nth-child(2) a {
+        font-size: clamp(25px, 7.1vw, 34px);
+        line-height: 0.9;
+        letter-spacing: -1px;
+      }
+
+      .scroll-effect-section {
+        height: 155vh;
+      }
+
+      .big-scroll-title {
+        font-size: clamp(48px, 14.4vw, 78px);
+        line-height: 0.76;
+      }
+
+      .scroll-word:nth-child(1) {
+        --y: -58px;
+      }
+
+      .scroll-word:nth-child(3) {
+        --y: 58px;
+      }
+
+      .about-section {
+        padding: 58px 18px 70px;
+      }
+
+      .about-heading {
+        margin-bottom: 20px;
+      }
+
+      .section-outline-title {
+        font-size: clamp(34px, 13vw, 56px);
+        line-height: 0.9;
+        letter-spacing: -1px;
+        -webkit-text-stroke-width: 1.2px;
+        text-stroke-width: 1.2px;
+      }
+
+      .about-text,
+      .about-bottom {
+        font-size: 16.5px;
+        line-height: 1.28;
+      }
+
+      .about-text {
+        margin-bottom: 24px;
+      }
+
+      .services-row {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      .services-row span {
+        font-size: 18px;
+      }
+
+      .about-bottom {
+        margin-bottom: 30px;
+      }
+
+      .cta-link {
+        gap: 12px;
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero-content h1 {
+        font-size: clamp(32px, 10.7vw, 42px);
+        line-height: 0.9;
+      }
+
+      .menu-content {
+        gap: 20px;
+        padding-inline: 16px;
+      }
+
+      .menu-column a,
+      .menu-column:nth-child(2) a {
+        font-size: 24px;
+      }
+
+      .big-scroll-title {
+        font-size: 43px;
+      }
+
+      .section-outline-title {
+        font-size: 34px;
+      }
+
+      .about-text,
+      .about-bottom {
+        font-size: 15.8px;
+      }
+    }
+
+    @media (max-height: 720px) and (max-width: 900px) {
+      .menu-content {
+        align-content: center;
+        gap: 22px;
+        padding-top: 8px;
+      }
+
+      .menu-column a,
+      .menu-column:nth-child(2) a {
+        font-size: clamp(24px, 6.8vw, 32px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  
+/* ========================= */
+/* AJUSTE MINIMALISTA CONTACTO + FOOTER */
+/* ========================= */
+
+.contact-section {
+  padding: clamp(72px, 8vw, 125px) clamp(24px, 5vw, 88px);
+}
+
+.contact-inner {
+  width: min(1240px, 100%);
+  grid-template-columns: minmax(300px, 0.78fr) minmax(420px, 1.22fr);
+  gap: clamp(44px, 6vw, 96px);
+}
+
+.contact-kicker {
+  font-size: clamp(13px, 0.9vw, 16px);
+  margin-bottom: 22px;
+  color: rgba(255,255,255,0.66);
+}
+
+.contact-title {
+font-size: clamp(28px, 4.5vw, 72px);
+  line-height: 0.9;
+  letter-spacing: clamp(-2.8px, -0.24vw, -4.5px);
+  max-width: 620px;
+  margin-bottom: clamp(26px, 3vw, 42px);
+}
+
+.contact-text {
+  max-width: 500px;
+  font-size: clamp(15px, 0.95vw, 18px);
+  line-height: 1.42;
+  color: rgba(255,255,255,0.72);
+}
+
+.contact-form {
+  gap: clamp(22px, 2vw, 30px) clamp(26px, 3vw, 48px);
+  padding-top: 4px;
+}
+
+.contact-form label {
+  font-size: clamp(12px, 0.8vw, 14px);
+  margin-bottom: 10px;
+  color: rgba(255,255,255,0.76);
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea {
+  font-size: clamp(15px, 0.95vw, 18px);
+  padding-bottom: 12px;
+  border-bottom-color: rgba(255,255,255,0.48);
+  color: #fff;
+}
+
+.contact-form textarea {
+  min-height: 112px;
+}
+
+.contact-submit {
+  font-size: clamp(16px, 1vw, 19px);
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.contact-submit .arrow {
+  font-size: clamp(28px, 2.5vw, 38px);
+}
+
+/* Footer más minimalista */
+.site-footer {
+  padding: clamp(52px, 5.5vw, 76px) clamp(28px, 5vw, 86px) 26px;
+}
+
+.footer-inner {
+  width: min(1240px, 100%);
+  grid-template-columns: 1fr 0.88fr 1fr;
+  gap: clamp(44px, 6vw, 96px);
+}
+
+.footer-col h2 {
+  font-size: clamp(30px, 2.55vw, 44px);
+  line-height: 0.98;
+  letter-spacing: -1.1px;
+  margin-bottom: clamp(34px, 4vw, 54px);
+}
+
+.footer-col p {
+  font-size: clamp(14px, 0.9vw, 17px);
+  line-height: 1.38;
+  margin-bottom: 18px;
+}
+
+.footer-link {
+  font-size: clamp(14px, 0.9vw, 17px);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.footer-link span {
+  font-size: 28px;
+}
+
+.footer-form input {
+  font-size: clamp(14px, 0.9vw, 17px);
+  margin-bottom: 24px;
+}
+
+.footer-bottom {
+  width: min(1240px, 100%);
+  margin-top: clamp(48px, 6vw, 82px);
+  font-size: clamp(13px, 0.85vw, 16px);
+}
+
+@media (max-width: 1000px) {
+  .contact-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .contact-title {
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 680px) {
+  .contact-section {
+    padding: 54px 26px 64px;
+  }
+
+  .contact-title {
+    font-size: clamp(34px, 10.5vw, 48px);
+    line-height: 0.94;
+    letter-spacing: -1.4px;
+    max-width: 420px;
+  }
+
+  .contact-text {
+    font-size: 15px;
+  }
+
+  .contact-form {
+    gap: 22px;
+  }
+
+  .contact-form input,
+  .contact-form select,
+  .contact-form textarea {
+    font-size: 15.5px;
+  }
+
+  .contact-form textarea {
+    min-height: 104px;
+  }
+
+  .contact-submit {
+    font-size: 16px;
+  }
+
+  .site-footer {
+    padding: 42px 28px 24px;
+  }
+
+  .footer-col h2 {
+    font-size: clamp(32px, 9vw, 40px);
+    margin-bottom: 28px;
+  }
+
+  .footer-col p {
+    font-size: 15.5px;
+    line-height: 1.42;
+  }
+
+  .footer-link {
+    font-size: 15.5px;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <section class="hero" id="hero">
+    <div class="grid-bg"></div>
+    <div class="distortion"></div>
+    <div class="shadow-overlay"></div>
+    <div class="noise"></div>
+
+    <header class="navbar" id="navbar">
+      <div class="social">
+        Síguenos en <strong>IG</strong> / FB / YT / TW / BE
+      </div>
+
+      <div class="logo">
+        <img src="img/logo-bitrax.png" alt="Logo">
+      </div>
+
+      <nav class="menu">
+        <button class="menu-btn" id="openMenu" type="button" aria-label="Abrir menú">
+          <span>MENÚ</span>
+          <span class="arrow">→</span>
+        </button>
+      </nav>
+    </header>
+
+    <main class="hero-content">
+      <h1>
+        <span class="word-box">
+          <span class="word active">REFORZAMOS</span>
+          <span class="word">CONSTRUIMOS</span>
+          <span class="word">POSICIONAMOS</span>
+        </span>
+        <br>
+        GRANDES<br>
+        MARCAS
+      </h1>
+    </main>
+  </section>
+
+  <aside class="fullscreen-menu" id="fullscreenMenu" aria-hidden="true">
+    <div class="menu-top">
+      <div class="menu-social">
+        Síguenos en <strong>IG</strong> / FB / YT / TW / BE
+      </div>
+
+      <div class="menu-lang">
+        <strong>ESP</strong>
+        <span>/ ENG</span>
+
+        <button class="close-menu" id="closeMenu" type="button" aria-label="Cerrar menú">
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-content">
+      <nav class="menu-column">
+        <a href="#">BRANDING /</a>
+        <a href="#">DISEÑO WEB /</a>
+        <a href="#">CAMPAÑAS 360 /</a>
+        <a href="#">MARKETING DIGITAL /</a>
+        <a href="#">AUDIOVISUALES</a>
+      </nav>
+
+      <nav class="menu-column">
+        <a href="#">NOSOTROS /</a>
+        <a href="#">SERVICIOS /</a>
+        <a href="#">PROCESO /</a>
+        <a href="#">CREATIVE FOLKS /</a>
+        <a href="#">BLOG /</a>
+        <a href="#contacto">CONTACTO</a>
+      </nav>
+    </div>
+  </aside>
+
+  <section class="scroll-effect-section" id="scrollEffect">
+    <div class="scroll-sticky">
+      <div class="big-scroll-title" id="bigScrollTitle">
+        <div class="scroll-word">SOMOS</div>
+        <div class="scroll-word">CREATIVIDAD</div>
+        <div class="scroll-word">FUNCIONAL</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="about-inner">
+      
+      <div class="about-heading fade-up">
+        <h2 class="section-outline-title">WHO WE ARE</h2>
+      </div>
+
+<p class="about-text fade-up">
+  Somos una agencia digital que trabaja <strong>en Estados Unidos y Perú para todo el mundo</strong>,
+  creando marcas, páginas web y estrategias digitales pensadas para atraer,
+  conectar y vender.
+</p>
+
+<div class="services-row fade-up">
+  <span>Desarrollo Web</span>
+  <span>Ecommerce</span>
+  <span>Tráfico Digital</span>
+  <span>Branding</span>
+</div>
+
+<p class="about-bottom fade-up">
+  <strong>No solo diseñamos presencia digital.</strong> Construimos experiencias que
+  convierten visitantes en clientes, ideas en marcas memorables y negocios en
+  proyectos listos para crecer. Combinamos diseño, estrategia y tecnología para
+  que tu marca destaque, venda y avance con propósito.
+</p>
+
+      <a href="#" class="cta-link fade-up">
+        <span>
+          Conoce todos<br>
+          nuestros servicios
+        </span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+<section class="portfolio-section" id="proyectos">
+  <div class="portfolio-inner">
+
+    <div class="portfolio-categories">
+      <a href="#branding" class="portfolio-category">DESARROLLO WEB</a>
+      <a href="#marketing" class="portfolio-category">DISEÑOS</a>
+      <a href="#audiovisuales" class="portfolio-category">BRANDING</a>
+    </div>
+
+    <div class="portfolio-grid">
+
+      <a href="https://ejemplo.com/proyecto-1" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80" alt="Proyecto Branding">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 1</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-2" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80" alt="Proyecto Branding">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 2</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-3" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80" alt="Proyecto Audiovisual">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 3</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-4" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80" alt="Proyecto Marketing">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 4</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-5" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80" alt="Proyecto Digital">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 5</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-6" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Proyecto Redes Sociales">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 6</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-7" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=80" alt="Proyecto Estrategia">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 7</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+      <a href="https://ejemplo.com/proyecto-8" target="_blank" class="portfolio-card">
+        <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80" alt="Proyecto Agencia">
+        <div class="portfolio-overlay">
+          <h3>Nombre Proyecto 8</h3>
+          <span>Ver proyecto →</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="portfolio-bottom">
+      <a href="#servicios" class="portfolio-cta">
+        <span>
+          Ver nuestros<br>
+          servicios
+        </span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<section class="clients-section" id="clientes">
+  <div class="clients-inner">
+    <h2 class="clients-title">CADA PROYECTO<br>HECHO CON BITRAX</h2>
+    <p class="clients-subtitle">Estas son algunas marcas que han confiado en nosotros.</p>
+  </div>
+
+  <div class="logos-marquee" aria-label="Logos de clientes en movimiento">
+    <div class="logos-track">
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ESPASSO%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 01">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EPAVO%20REY%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 02">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EMAZDA%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 03">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ELA%20MACARENA%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 04">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EDOND%C3%89%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 05">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EMACROPAY%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 06">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EROYAL%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 07">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2008%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 08">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2009%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 09">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2010%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 10">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2011%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 11">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2012%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 12">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2013%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 13">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2014%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 14">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2015%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 15">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2016%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 16">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2017%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 17">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ESPASSO%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 01">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EPAVO%20REY%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 02">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EMAZDA%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 03">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ELA%20MACARENA%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 04">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EDOND%C3%89%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 05">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EMACROPAY%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 06">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3EROYAL%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 07">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2008%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 08">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2009%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 09">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2010%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 10">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2011%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 11">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2012%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 12">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2013%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 13">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2014%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 14">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2015%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 15">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2016%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 16">
+        </div>
+        <div class="logo-item">
+          <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22260%22%20height%3D%2296%22%20viewBox%3D%220%200%20260%2096%22%3E%0A%20%20%3Crect%20width%3D%22260%22%20height%3D%2296%22%20fill%3D%22none%22/%3E%0A%20%20%3Ctext%20x%3D%22130%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22white%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%3ECLIENTE%2017%3C/text%3E%0A%3C/svg%3E" alt="Logo referencial 17">
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact-section" id="contacto">
+  <div class="contact-inner">
+    <div class="contact-copy fade-up">
+      <span class="contact-kicker">Hablemos de tu proyecto</span>
+      <h2 class="contact-title">LLEVEMOS<br>TU MARCA<br>MÁS LEJOS</h2>
+      <p class="contact-text">
+        Cuéntanos qué necesitas construir, mejorar o lanzar. Nuestro equipo revisará tu idea
+        y te contactará para crear una propuesta alineada a tus objetivos.
+      </p>
+    </div>
+
+    <form class="contact-form fade-up" action="#" method="post">
+      <div class="contact-field">
+        <label for="nombre">Nombre*</label>
+        <input id="nombre" name="nombre" type="text" placeholder="Tu nombre" required>
+      </div>
+
+      <div class="contact-field">
+        <label for="empresa">Empresa</label>
+        <input id="empresa" name="empresa" type="text" placeholder="Nombre de marca">
+      </div>
+
+      <div class="contact-field">
+        <label for="email">Email*</label>
+        <input id="email" name="email" type="email" placeholder="correo@empresa.com" required>
+      </div>
+
+      <div class="contact-field">
+        <label for="telefono">Teléfono / WhatsApp</label>
+        <input id="telefono" name="telefono" type="tel" placeholder="+51 999 999 999">
+      </div>
+
+      <div class="contact-field full">
+        <label for="servicio">Servicio de interés*</label>
+        <select id="servicio" name="servicio" required>
+          <option value="">Selecciona una opción</option>
+          <option value="desarrollo-web">Desarrollo web</option>
+          <option value="ecommerce">Ecommerce</option>
+          <option value="branding">Branding</option>
+          <option value="marketing-digital">Marketing digital</option>
+          <option value="audiovisuales">Audiovisuales</option>
+        </select>
+      </div>
+
+      <div class="contact-field full">
+        <label for="mensaje">Mensaje*</label>
+        <textarea id="mensaje" name="mensaje" placeholder="Cuéntanos sobre tu proyecto" required></textarea>
+      </div>
+
+      <button class="contact-submit" type="submit">
+        Enviar mensaje <span class="arrow">→</span>
+      </button>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer" id="footer">
+  <div class="footer-inner">
+
+    <div class="footer-col footer-contact">
+      <h2>QUEREMOS<br>CONOCERTE</h2>
+
+      <p>COMIENZA A FORTALECER TU MARCA CON NOSOTROS.</p>
+
+      <p><strong>C</strong> / VENTAS@BITRAX.COM</p>
+      <p><strong>T</strong> / (999) 944 0944</p>
+
+      <p>
+        <strong>PERÚ</strong> / LIMA, PERÚ<br>
+        ATENCIÓN A TODO EL PAÍS Y PROYECTOS INTERNACIONALES
+      </p>
+
+      <p>
+        <strong>ESTADOS UNIDOS</strong> / PROYECTOS DIGITALES<br>
+        PARA MARCAS QUE BUSCAN CRECER
+      </p>
+
+      <a href="#contacto" class="footer-link">CONTÁCTANOS <span>→</span></a>
+    </div>
+
+    <div class="footer-col footer-jobs">
+      <h2>ÚNETE AL<br>EQUIPO</h2>
+
+      <p>SIEMPRE HAY LUGAR PARA GENTE TALENTOSA.</p>
+
+      <p>
+        ENVÍA TU CV Y PORTAFOLIO A:<br><br>
+        JOBS@BITRAX.COM
+      </p>
+
+      <p class="footer-copy">Aviso de privacidad Copyright Bitrax 2026©</p>
+
+      <a href="#contacto" class="footer-link">CONTÁCTANOS <span>→</span></a>
+    </div>
+
+    <div class="footer-col footer-newsletter">
+      <h2>INSPÍRATE</h2>
+
+      <p>
+        IMPULSA TU CREATIVIDAD CON NUESTROS<br>
+        PROYECTOS, TIPS Y ARTÍCULOS GRATUITOS. (NO<br>
+        SPAM, LO PROMETEMOS).
+      </p>
+
+      <form class="footer-form" action="#" method="post">
+        <input type="text" name="nombre_newsletter" placeholder="NOMBRE*" required>
+        <input type="text" name="apellido_newsletter" placeholder="APELLIDO*" required>
+        <input type="email" name="email_newsletter" placeholder="DÉJANOS TU E-MAIL*" required>
+
+        <button type="submit" class="footer-link footer-button">
+          SUSCRIBIRME <span>→</span>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <span>DERECHOS RESERVADOS 2026 BITRAX ®</span>
+    <a href="#">AVISO DE PRIVACIDAD</a>
+  </div>
+</footer>
+
+  <script>
+    const hero = document.getElementById("hero");
+    const navbar = document.getElementById("navbar");
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let lastScrollY = window.scrollY;
+
+    hero.addEventListener("mousemove", function (event) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      targetX = (event.clientX / width - 0.5) * 2;
+      targetY = (event.clientY / height - 0.5) * 2;
+    });
+
+    hero.addEventListener("mouseleave", function () {
+      targetX = 0;
+      targetY = 0;
+    });
+
+    function animateBackground() {
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+
+      hero.style.setProperty("--move-x", currentX * 28 + "px");
+      hero.style.setProperty("--move-y", currentY * 28 + "px");
+
+      hero.style.setProperty("--wave-x", currentX * -38 + "px");
+      hero.style.setProperty("--wave-y", currentY * -28 + "px");
+
+      requestAnimationFrame(animateBackground);
+    }
+
+    animateBackground();
+
+    const words = document.querySelectorAll(".word");
+    let currentWord = 0;
+    let isChanging = false;
+    let wordInterval = null;
+
+    function changeWord() {
+      if (isChanging || hero.classList.contains("scroll-started")) return;
+
+      isChanging = true;
+
+      const oldWord = words[currentWord];
+      currentWord = (currentWord + 1) % words.length;
+      const newWord = words[currentWord];
+
+      oldWord.classList.remove("active");
+      oldWord.classList.add("exit");
+
+      newWord.classList.add("active");
+
+      setTimeout(function () {
+        oldWord.classList.remove("exit");
+        isChanging = false;
+      }, 850);
+    }
+
+    function startWordLoop() {
+      if (!wordInterval) {
+        wordInterval = setInterval(changeWord, 3000);
+      }
+    }
+
+    function stopWordLoop() {
+      if (wordInterval) {
+        clearInterval(wordInterval);
+        wordInterval = null;
+      }
+    }
+
+    startWordLoop();
+
+    const openMenu = document.getElementById("openMenu");
+    const closeMenu = document.getElementById("closeMenu");
+    const fullscreenMenu = document.getElementById("fullscreenMenu");
+
+    function openFullscreenMenu() {
+      fullscreenMenu.classList.add("open");
+      fullscreenMenu.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      navbar.classList.remove("nav-hidden");
+    }
+
+    function closeFullscreenMenu() {
+      fullscreenMenu.classList.remove("open");
+      fullscreenMenu.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    openMenu.addEventListener("click", openFullscreenMenu);
+    closeMenu.addEventListener("click", closeFullscreenMenu);
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeFullscreenMenu();
+      }
+    });
+
+    const menuLinks = fullscreenMenu.querySelectorAll("a");
+
+    menuLinks.forEach(function (link) {
+      link.addEventListener("click", closeFullscreenMenu);
+    });
+
+    const scrollEffect = document.getElementById("scrollEffect");
+    const bigScrollTitle = document.getElementById("bigScrollTitle");
+    const fadeElements = document.querySelectorAll(".fade-up");
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function updateHeroScrollExit() {
+      const scrollY = window.scrollY;
+      const heroHeight = hero.offsetHeight || window.innerHeight;
+      const heroProgress = clamp(scrollY / (heroHeight * 0.55), 0, 1);
+
+      hero.style.setProperty("--hero-scroll-progress", heroProgress.toFixed(3));
+
+      if (scrollY > 18) {
+        hero.classList.add("scroll-started");
+        words[currentWord].classList.add("scroll-exit");
+        stopWordLoop();
+      } else {
+        hero.classList.remove("scroll-started");
+        words.forEach(function (word) {
+          word.classList.remove("scroll-exit", "exit");
+        });
+        words[currentWord].classList.add("active");
+        startWordLoop();
+      }
+    }
+
+    function updateNavbar() {
+      const scrollY = window.scrollY;
+      const scrollingDown = scrollY > lastScrollY;
+      const menuIsOpen = fullscreenMenu.classList.contains("open");
+
+      navbar.classList.toggle("nav-scrolled", scrollY > 24);
+
+      if (!menuIsOpen && scrollY > 30 && scrollingDown) {
+        navbar.classList.add("nav-hidden");
+      }
+
+      if (!scrollingDown || scrollY <= 8) {
+        navbar.classList.remove("nav-hidden");
+      }
+
+      lastScrollY = scrollY;
+    }
+
+    function updateScrollEffect() {
+      const rect = scrollEffect.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      const totalDistance = rect.height - windowHeight;
+      const progress = clamp(-rect.top / totalDistance, 0, 1);
+
+      const split = clamp(progress * 1.45, 0, 1);
+      const fill = clamp((progress - 0.42) / 0.45, 0, 1);
+      const scale = 1 - progress * 0.12;
+
+      bigScrollTitle.style.setProperty("--split", split);
+      bigScrollTitle.style.setProperty("--fill", fill);
+      bigScrollTitle.style.setProperty("--scale", scale);
+
+      fadeElements.forEach(function (element) {
+        const elementRect = element.getBoundingClientRect();
+
+        if (elementRect.top < window.innerHeight * 0.82) {
+          element.classList.add("visible");
+        }
+      });
+    }
+
+    function onScrollOrResize() {
+      updateHeroScrollExit();
+      updateNavbar();
+      updateScrollEffect();
+    }
+
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
+    onScrollOrResize();
+  </script>
+</body>
+</html>
